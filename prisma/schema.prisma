@@ -1,0 +1,224 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum OrganizationStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
+enum UserRole {
+  PLATFORM_ADMIN
+  ORG_ADMIN
+  STUDENT
+}
+
+enum CourseStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum QuestionType {
+  SINGLE_CHOICE
+  MULTIPLE_CHOICE
+}
+
+model Organization {
+  id        String             @id @default(uuid()) @db.Uuid
+  name      String             @db.VarChar(255)
+  cnpj      String             @unique @db.VarChar(18)
+  status    OrganizationStatus @default(ACTIVE)
+  createdAt DateTime           @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime           @updatedAt @map("updated_at") @db.Timestamptz
+
+  users        User[]
+  courses      Course[]
+  userProgress UserProgress[]
+  userAnswers  UserAnswer[]
+
+  @@map("organizations")
+}
+
+model User {
+  id             String   @id @default(uuid()) @db.Uuid
+  organizationId String   @map("organization_id") @db.Uuid
+  fullName       String   @map("full_name") @db.VarChar(255)
+  email          String   @db.VarChar(255)
+  passwordHash   String   @map("password_hash")
+  role           UserRole
+  isActive       Boolean  @default(true) @map("is_active")
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt      DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  coursesCreated Course[]     @relation("CourseCreatedBy")
+  userProgress   UserProgress[]
+  userAnswers    UserAnswer[]
+
+  @@unique([organizationId, id])
+  @@unique([organizationId, email])
+  @@index([organizationId, role])
+  @@map("users")
+}
+
+model Course {
+  id              String       @id @default(uuid()) @db.Uuid
+  organizationId  String?      @map("organization_id") @db.Uuid
+  title           String       @db.VarChar(255)
+  description     String?
+  status          CourseStatus @default(DRAFT)
+  isGlobal        Boolean      @default(false) @map("is_global")
+  createdByUserId String?      @map("created_by_user_id") @db.Uuid
+  createdAt       DateTime     @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt       DateTime     @updatedAt @map("updated_at") @db.Timestamptz
+
+  organization  Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+  createdByUser User?         @relation("CourseCreatedBy", fields: [createdByUserId], references: [id], onDelete: SetNull)
+  modules       Module[]
+
+  @@unique([id, organizationId])
+  @@index([organizationId])
+  @@map("courses")
+}
+
+model Module {
+  id        String   @id @default(uuid()) @db.Uuid
+  courseId  String   @map("course_id") @db.Uuid
+  title     String   @db.VarChar(255)
+  sortOrder Int      @map("sort_order")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  course         Course          @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  lessons        Lesson[]
+  questionnaires Questionnaire[]
+
+  @@unique([courseId, sortOrder])
+  @@index([courseId])
+  @@map("modules")
+}
+
+model Lesson {
+  id        String   @id @default(uuid()) @db.Uuid
+  moduleId  String   @map("module_id") @db.Uuid
+  title     String   @db.VarChar(255)
+  sortOrder Int      @map("sort_order")
+  videoUrl  String   @map("video_url")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  module         Module          @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  questionnaires Questionnaire[]
+  userProgress   UserProgress[]
+
+  @@unique([moduleId, sortOrder])
+  @@index([moduleId])
+  @@map("lessons")
+}
+
+model Questionnaire {
+  id          String   @id @default(uuid()) @db.Uuid
+  moduleId    String?  @map("module_id") @db.Uuid
+  lessonId    String?  @map("lesson_id") @db.Uuid
+  title       String   @db.VarChar(255)
+  description String?
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  module    Module?    @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  lesson    Lesson?    @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  questions Question[]
+
+  @@index([moduleId])
+  @@index([lessonId])
+  @@map("questionnaires")
+}
+
+model Question {
+  id              String       @id @default(uuid()) @db.Uuid
+  questionnaireId String       @map("questionnaire_id") @db.Uuid
+  prompt          String
+  questionType    QuestionType @default(SINGLE_CHOICE) @map("question_type")
+  sortOrder       Int          @map("sort_order")
+  points          Decimal      @default(1.00) @db.Decimal(6, 2)
+  createdAt       DateTime     @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt       DateTime     @updatedAt @map("updated_at") @db.Timestamptz
+
+  questionnaire Questionnaire    @relation(fields: [questionnaireId], references: [id], onDelete: Cascade)
+  options       QuestionOption[]
+  userAnswers   UserAnswer[]
+
+  @@unique([questionnaireId, sortOrder])
+  @@unique([questionnaireId, id])
+  @@index([questionnaireId])
+  @@map("questions")
+}
+
+model QuestionOption {
+  id         String   @id @default(uuid()) @db.Uuid
+  questionId String   @map("question_id") @db.Uuid
+  optionText String   @map("option_text")
+  isCorrect  Boolean  @default(false) @map("is_correct")
+  sortOrder  Int      @map("sort_order")
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt  DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  question    Question     @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  userAnswers UserAnswer[]
+
+  @@unique([questionId, sortOrder])
+  @@unique([questionId, id])
+  @@index([questionId])
+  @@map("question_options")
+}
+
+model UserProgress {
+  id                          String    @id @default(uuid()) @db.Uuid
+  organizationId              String    @map("organization_id") @db.Uuid
+  userId                      String    @map("user_id") @db.Uuid
+  lessonId                    String    @map("lesson_id") @db.Uuid
+  isCompleted                 Boolean   @default(false) @map("is_completed")
+  lastTimestampWatchedSeconds Int       @default(0) @map("last_timestamp_watched_seconds")
+  completedAt                 DateTime? @map("completed_at") @db.Timestamptz
+  createdAt                   DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt                   DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lesson       Lesson       @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, userId, lessonId])
+  @@index([organizationId, userId])
+  @@index([organizationId, lessonId])
+  @@map("user_progress")
+}
+
+model UserAnswer {
+  id               String   @id @default(uuid()) @db.Uuid
+  organizationId   String   @map("organization_id") @db.Uuid
+  userId           String   @map("user_id") @db.Uuid
+  questionnaireId  String   @map("questionnaire_id") @db.Uuid
+  questionId       String   @map("question_id") @db.Uuid
+  selectedOptionId String?  @map("selected_option_id") @db.Uuid
+  answerText       String?  @map("answer_text")
+  isCorrect        Boolean? @map("is_correct")
+  scoreAwarded     Decimal  @default(0.00) @map("score_awarded") @db.Decimal(6, 2)
+  answeredAt       DateTime @default(now()) @map("answered_at") @db.Timestamptz
+  createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt        DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  organization   Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  question       Question        @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  selectedOption QuestionOption? @relation(fields: [selectedOptionId], references: [id], onDelete: SetNull)
+
+  @@index([organizationId, userId])
+  @@index([organizationId, questionnaireId])
+  @@map("user_answers")
+}
