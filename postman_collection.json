@@ -1,0 +1,76 @@
+{
+  "info": {
+    "_postman_id": "eg-faktory-ead",
+    "name": "EG Faktory EAD - API",
+    "description": "Coleção de endpoints da API EG Faktory para testes",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          {
+            "info": {
+              "name": "EG Faktory API - Updated",
+              "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+              "version": "1.0.0"
+            },
+            "variable": [
+              { "key": "base_url", "value": "http://localhost:3001/api", "type": "string" },
+              { "key": "token", "value": "", "type": "string" }
+            ],
+            "item": [
+              {
+                "name": "Auth",
+                "item": [
+                  {
+                    "name": "Login",
+                    "request": {
+                      "method": "POST",
+                      "header": [ { "key": "Content-Type", "value": "application/json" } ],
+                      "body": { "mode": "raw", "raw": "{\n  \"email\": \"admin@eg.com\",\n  \"password\": \"password123\"\n}" },
+                      "url": { "raw": "{{base_url}}/auth/login", "host": ["{{base_url}}"], "path": ["auth","login"] }
+                    }
+                  },
+                  { "name": "Refresh Token", "request": { "method": "POST", "header": [ { "key": "Content-Type", "value": "application/json" } ], "body": { "mode": "raw", "raw": "{\n  \"refreshToken\": \"<refresh-token>\"\n}" }, "url": { "raw": "{{base_url}}/auth/refresh", "host": ["{{base_url}}"], "path": ["auth","refresh"] } } },
+                  { "name": "Logout", "request": { "method": "POST", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ], "url": { "raw": "{{base_url}}/auth/logout", "host": ["{{base_url}}"], "path": ["auth","logout"] } } },
+                  { "name": "Me", "request": { "method": "GET", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ], "url": { "raw": "{{base_url}}/auth/me", "host": ["{{base_url}}"], "path": ["auth","me"] } } }
+                ]
+              },
+              {
+                "name": "Users",
+                "item": [
+                  { "name": "List Users (paginated)", "request": { "method": "GET", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ], "url": { "raw": "{{base_url}}/users?page=1&pageSize=10", "host": ["{{base_url}}"], "path": ["users"], "query": [{"key":"page","value":"1"},{"key":"pageSize","value":"10"}] } } },
+                  { "name": "Get User", "request": { "method": "GET", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ], "url": { "raw": "{{base_url}}/users/:id", "host": ["{{base_url}}"], "path": ["users",":id"] } } },
+                  { "name": "Create User", "request": { "method": "POST", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" } ], "body": { "mode": "raw", "raw": "{\n  \"organizationId\": \"<org-uuid>\",\n  \"name\": \"Fulano\",\n  \"email\": \"user@org.com\",\n  \"password\": \"secret123\",\n  \"role\": \"ADMIN_CLIENTE\"\n}" }, "url": { "raw": "{{base_url}}/users", "host": ["{{base_url}}"], "path": ["users"] } } },
+                  { "name": "Update User", "request": { "method": "PATCH", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" } ], "body": { "mode": "raw", "raw": "{\n  \"name\": \"Nome Atualizado\"\n}" }, "url": { "raw": "{{base_url}}/users/:id", "host": ["{{base_url}}"], "path": ["users",":id"] } } },
+                  { "name": "Delete User", "request": { "method": "DELETE", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ], "url": { "raw": "{{base_url}}/users/:id", "host": ["{{base_url}}"], "path": ["users",":id"] } } }
+                ]
+              },
+              {
+                "name": "Organizations",
+                "item": [
+                  { "name": "List Organizations", "request": { "method": "GET", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ], "url": { "raw": "{{base_url}}/organizations?page=1&pageSize=10", "host": ["{{base_url}}"], "path": ["organizations"], "query": [{"key":"page","value":"1"},{"key":"pageSize","value":"10"}] } } },
+                  { "name": "Get Organization", "request": { "method": "GET", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ], "url": { "raw": "{{base_url}}/organizations/:id", "host": ["{{base_url}}"], "path": ["organizations",":id"] } } },
+                  { "name": "Create Organization", "request": { "method": "POST", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" } ], "body": { "mode": "raw", "raw": "{\n  \"name\": \"Empresa X\",\n  \"cnpj\": \"00000000000000\",\n  \"domain\": \"empresa.local\",\n  \"licensesTotal\": 100\n}" }, "url": { "raw": "{{base_url}}/organizations", "host": ["{{base_url}}"], "path": ["organizations"] } } },
+                  { "name": "Update Organization", "request": { "method": "PATCH", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" } ], "body": { "mode": "raw", "raw": "{\n  \"licensesUsed\": 10\n}" }, "url": { "raw": "{{base_url}}/organizations/:id", "host": ["{{base_url}}"], "path": ["organizations",":id"] } } }
+                ]
+              },
+              {
+                "name": "Courses",
+                "item": [
+                  { "name": "List Courses", "request": { "method": "GET", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ], "url": { "raw": "{{base_url}}/courses?page=1&pageSize=10", "host": ["{{base_url}}"], "path": ["courses"], "query": [{"key":"page","value":"1"},{"key":"pageSize","value":"10"}] } } },
+                  { "name": "Get Course", "request": { "method": "GET", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ], "url": { "raw": "{{base_url}}/courses/:id", "host": ["{{base_url}}"], "path": ["courses",":id"] } } },
+                  { "name": "Create Course", "request": { "method": "POST", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" } ], "body": { "mode": "raw", "raw": "{\n  \"title\": \"Curso Exemplo\",\n  \"description\": \"Descrição\",\n  \"thumbnail\": \"https://.../thumb.jpg\",\n  \"duration\": 120,\n  \"level\": \"BEGINNER\"\n}" }, "url": { "raw": "{{base_url}}/courses", "host": ["{{base_url}}"], "path": ["courses"] } } },
+                  { "name": "Update Course", "request": { "method": "PATCH", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" } ], "body": { "mode": "raw", "raw": "{\n  \"title\": \"Novo Título\"\n}" }, "url": { "raw": "{{base_url}}/courses/:id", "host": ["{{base_url}}"], "path": ["courses",":id"] } } },
+                  { "name": "Get Course Modules", "request": { "method": "GET", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ], "url": { "raw": "{{base_url}}/courses/:courseId/modules", "host": ["{{base_url}}"], "path": ["courses",":courseId","modules"] } } }
+                ]
+              },
+              { "name": "Modules & Lessons", "item": [ { "name": "Get Module", "request": { "method": "GET", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ], "url": { "raw": "{{base_url}}/modules/:id", "host": ["{{base_url}}"], "path": ["modules",":id"] } } }, { "name": "Get Module Lessons", "request": { "method": "GET", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ], "url": { "raw": "{{base_url}}/modules/:moduleId/lessons", "host": ["{{base_url}}"], "path": ["modules",":moduleId","lessons"] } } }, { "name": "Get Lesson", "request": { "method": "GET", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ], "url": { "raw": "{{base_url}}/lessons/:id", "host": ["{{base_url}}"], "path": ["lessons",":id"] } } } ] },
+              { "name": "Progress", "item": [ { "name": "My Progress", "request": { "method": "GET", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ], "url": { "raw": "{{base_url}}/progress/me", "host": ["{{base_url}}"], "path": ["progress","me"] } } }, { "name": "Course Progress", "request": { "method": "GET", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ], "url": { "raw": "{{base_url}}/progress/course/:courseId", "host": ["{{base_url}}"], "path": ["progress","course",":courseId"] } } }, { "name": "Complete Lesson", "request": { "method": "POST", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ], "url": { "raw": "{{base_url}}/progress/lesson/:lessonId/complete", "host": ["{{base_url}}"], "path": ["progress","lesson",":lessonId","complete"] } } } ] },
+              { "name": "Quizzes", "item": [ { "name": "Get Quiz", "request": { "method": "GET", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ], "url": { "raw": "{{base_url}}/quizzes/:id", "host": ["{{base_url}}"], "path": ["quizzes",":id"] } } }, { "name": "Submit Quiz", "request": { "method": "POST", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" } ], "body": { "mode": "raw", "raw": "{\n  \"answers\": [ { \"questionId\": \"<q-id>\", \"selectedOptionId\": \"<opt-id>\" } ]\n}" }, "url": { "raw": "{{base_url}}/quizzes/:quizId/submit", "host": ["{{base_url}}"], "path": ["quizzes",":quizId","submit"] } } } ] },
+              { "name": "Dashboard", "item": [ { "name": "Org Metrics", "request": { "method": "GET", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ], "url": { "raw": "{{base_url}}/dashboard/metrics", "host": ["{{base_url}}"], "path": ["dashboard","metrics"] } } }, { "name": "Global Metrics", "request": { "method": "GET", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ], "url": { "raw": "{{base_url}}/dashboard/admin", "host": ["{{base_url}}"], "path": ["dashboard","admin"] } } } ] }
+            ]
+          }
+            ],
